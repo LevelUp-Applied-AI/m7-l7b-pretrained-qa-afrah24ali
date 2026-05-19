@@ -1,0 +1,21 @@
+qid,question,context_excerpt,gold_answer,predicted_answer,pattern_tag,em,f1
+EX_01,Who did Morissette collaborate with?,Morissette collaborated with Weezer on a track. She also worked with Guy Sigswor,Weezer,Weezer,same-type-distractor,1,1.0
+EX_02,Who led the project?,The project was led by NASA with support from ESA. Later ESA released a statemen,NASA,NASA,same-type-distractor,1,1.0
+EX_03,What did Facebook acquire?,Facebook acquired Instagram. Snapchat remained independent.,Instagram,Instagram,same-type-distractor,1,1.0
+EX_04,Who did Amazon partner with?,Amazon partnered with UPS. FedEx handled delivery for Walmart.,UPS,UPS. FedEx,same-type-distractor,0,0.6666666666666666
+EX_05,Who released GPT models?,OpenAI released GPT models. Google released Gemini models.,OpenAI,OpenAI,same-type-distractor,1,1.0
+EX_06,Who launched Apollo missions?,NASA launched Apollo missions.,NASA,NASA,multi-entity-clean,1,1.0
+EX_07,Who owns GitHub?,Microsoft owns GitHub.,Microsoft,Microsoft,multi-entity-clean,1,1.0
+EX_08,Who produces electric cars?,Tesla produces electric cars.,Tesla,Tesla,multi-entity-clean,1,1.0
+EX_09,Who operates AWS?,Amazon operates AWS.,Amazon,Amazon,multi-entity-clean,1,1.0
+EX_10,Who owns YouTube?,Google owns YouTube.,Google,Google,multi-entity-clean,1,1.0
+EX_11,Who founded SpaceX?,Elon Musk founded SpaceX in 2002 and later expanded Tesla operations.,Elon Musk,Elon Musk,multi-sentence-relation,1,1.0
+EX_12,Who created Amazon?,Jeff Bezos created Amazon and later launched Blue Origin.,Jeff Bezos,Jeff Bezos,multi-sentence-relation,1,1.0
+EX_13,Who became CEO of Apple?,Tim Cook became CEO of Apple after Steve Jobs.,Tim Cook,Tim Cook,multi-sentence-relation,1,1.0
+EX_14,Who founded Facebook?,Mark Zuckerberg founded Facebook while at Harvard.,Mark Zuckerberg,Mark Zuckerberg,multi-sentence-relation,1,1.0
+EX_15,Who co-founded Google?,Sergey Brin co-founded Google with Larry Page.,Sergey Brin,Sergey Brin,multi-sentence-relation,1,1.0
+EX_16,Who streams movies globally?,Netflix streams movies globally.,Netflix,Netflix,control,1,1.0
+EX_17,Who operates ride sharing services?,Uber operates ride sharing services.,Uber,Uber,control,1,1.0
+EX_18,Who provides music streaming?,Spotify provides music streaming.,Spotify,Spotify,control,1,1.0
+EX_19,Who owns Facebook?,Meta owns Facebook.,Meta,Meta,control,1,1.0
+EX_20,Who operates AWS?,Amazon operates AWS.,Amazon,Amazon,control,1,1.0

@@ -1,4 +1,31 @@
 qid,question,context,gold_answer,pattern_tag
-EX_01,REPLACE_WITH_YOUR_QUESTION,REPLACE_WITH_YOUR_CONTEXT_THAT_CONTAINS_THE_GOLD_ANSWER_AS_A_LITERAL_SUBSTRING,REPLACE_WITH_GOLD,your-pattern-tag
-EX_02,REPLACE_WITH_YOUR_QUESTION,REPLACE_WITH_YOUR_CONTEXT,REPLACE_WITH_GOLD,your-pattern-tag
-EX_03,REPLACE_WITH_A_CONTROL_QUESTION_THAT_THE_MODEL_SHOULD_GET_RIGHT,REPLACE_WITH_AN_EASY_VERSION_OF_THE_PATTERN,REPLACE_WITH_GOLD,control
+1,Who is the Jordanian student mentioned?,"Jana from Amman studied computer science while her friend Sara joined engineering.",jana,distractor
+2,Who joined engineering?,"Jana studies CS in Amman and Sara joined engineering at the same university.",Sara,distractor
+3,Who studies computer science?,"Sara joined engineering while Jana from Amman studies computer science.",jana,distractor
+4,Who is from Amman?,"Jana from Amman and Lina from Irbid are studying at university.",jana,distractor
+5,Who is studying engineering?,"Lina studies engineering while Jana studies CS in Amman.",Lina,distractor
+6,Who is mentioned as the friend?,"Jana said her friend Sara helped her with exams in Amman.",Sara,distractor
+7,Who helped with exams?,"Sara helped Jana with exams while Lina was also present.",Sara,distractor
+8,Who is studying at university?,"Jana and Sara are both studying at the University of Jordan.",Jana,distractor
+9,Who is studying at University of Jordan?,"Sara studies engineering while Jana studies CS at the University of Jordan.",Jana,distractor
+10,Who is from Irbid?,"Lina from Irbid studies engineering with Jana from Amman.",Lina,distractor
+11,Who is the main student in CS?,"Jana studies CS in Amman while Sara studies engineering.",Jana,distractor
+12,Who is the engineering student?,"Sara studies engineering and Jana studies CS.",Sara,distractor
+13,Who is mentioned first?,"Jana from Amman and Sara from Zarqa are classmates.",Jana,distractor
+14,Who is from Zarqa?,"Sara from Zarqa studies engineering with Jana.",Sara,distractor
+15,Who is studying in Amman?,"Jana studies in Amman while Sara studies in Zarqa.",Jana,distractor
+16,Who is the Jordanian student?,"Jana is a student in Amman University and Sara is also a student in Jordan.",Jana,distractor
+17,Who is Sara's friend?,"Sara and Jana are friends studying in Amman.",Jana,distractor
+18,Who is Jana's friend?,"Jana and Sara are friends in university.",Sara,distractor
+19,Who is in CS department?,"Jana is in CS and Sara is in Engineering at the same university.",Jana,distractor
+20,Who is in Engineering department?,"Sara is in Engineering and Jana is in CS.",Sara,distractor
+21,Who is the student from Jordan?,"Jana from Jordan studies computer science while Sara studies engineering.",Jana,distractor
+22,Who studies in engineering faculty?,"Sara studies engineering faculty and Jana studies CS.",Sara,distractor
+23,Who is mentioned in Amman context?,"Jana studies in Amman University with Sara.",Jana,distractor
+24,Who is the university student?,"Sara and Jana are university students in Jordan.",Jana,distractor
+25,Who is studying CS?,"Jana studies CS while Sara studies engineering in Jordan.",Jana,distractor
+26,Who is Sara?,"Sara is a student in engineering in Amman.",Sara,distractor
+27,Who is Jana?,"Jana is a CS student in Amman.",Jana,distractor
+28,Who studies engineering in Amman?,"Sara studies engineering in Amman while Jana studies CS.",Sara,distractor
+29,Who studies CS in Amman?,"Jana studies CS in Amman while Sara studies engineering.",Jana,control
+30,Who is the student mentioned in a simple sentence?,"Jana is a student in Amman.",Jana,control
