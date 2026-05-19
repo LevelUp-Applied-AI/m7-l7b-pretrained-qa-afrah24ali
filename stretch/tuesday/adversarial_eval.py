@@ -11,19 +11,27 @@ import sys
 
 import pandas as pd
 
-# allow import of lab.py
+
+# Import the lab's existing functions (we reuse build_qa_pipeline, predict_one,
+# evaluate_qa, normalize_answer, exact_match, token_f1)
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 import lab  # noqa: E402
 
-def load_adversarial_set(path: str = "stretch/tuesday/adversarial_set.csv") -> pd.DataFrame:
-    df = pd.read_csv(path)
 
-    required_cols = {"qid", "question", "context", "gold_answer", "pattern_tag"}
-    missing = required_cols - set(df.columns)
+def load_adversarial_set(path: str = "stretch/tuesday/adversarial_set.csv") -> pd.DataFrame:
+    """
+    Load the adversarial test set CSV.
+
+    Verifies columns: qid, question, context, gold_answer, pattern_tag.
+    """
+    df= pd.read_csv(path)
+    required_cols={"qid", "question", "context", "gold_answer", "pattern_tag"}
+    missing= required_cols-set(df.columns)
 
     if missing:
-        raise ValueError(f"Missing columns: {missing}")
-
+        raise ValueError(f"Missing required columns in adversarial set {path}: {missing}"
+                         f"EXPECTED exactly: {required_cols}")
+    
     return df
 
 
@@ -31,69 +39,47 @@ def load_adversarial_set(path: str = "stretch/tuesday/adversarial_set.csv") -> p
 # Evaluation logic
 # -----------------------------
 def evaluate_adversarial(qa, df: pd.DataFrame) -> dict:
-    predictions = []
+    """
+    Run the QA pipeline on the adversarial set; compute aggregate + per-pattern metrics.
 
-    total_em = 0.0
-    total_f1 = 0.0
-    n = len(df)
+    Returns:
+        {
+          "em": float, "f1": float, "n": int,
+          "per_pattern": { tag: {"em": float, "f1": float, "n": int}, ... },
+          "predictions": [ ... lab.evaluate_qa-shaped entries plus pattern_tag ... ],
+        }
+    """
+    
+    result = lab.evaluate_qa(qa, df)
+    predictions = result["predictions"]
+
+    for prediction, (_, row) in zip(predictions, df.iterrows()):
+        prediction["pattern_tag"] = row["pattern_tag"]
 
     per_pattern = {}
-
-    for _, row in df.iterrows():
-        qid = row["qid"]
-        question = row["question"]
-        context = row["context"]
-        gold = row["gold_answer"]
-        tag = row["pattern_tag"]
-
-        # fix missing tags
-        if pd.isna(tag):
-            tag = "control"
-
-        # -------------------------
-        # FIXED QA CALL (IMPORTANT)
-        # -------------------------
-        pred = qa(question=question, context=context)["answer"]
-
-        # metrics
-        em = lab.exact_match(pred, gold)
-        f1 = lab.token_f1(pred, gold)
-
-        total_em += em
-        total_f1 += f1
-
-        predictions.append({
-            "qid": qid,
-            "question": question,
-            "context_excerpt": context[:80],
-            "gold_answer": gold,
-            "predicted_answer": pred,
-            "pattern_tag": tag,
-            "em": em,
-            "f1": f1
-        })
-
-        # init bucket
+    for p in predictions:
+        tag = p["pattern_tag"]
         if tag not in per_pattern:
             per_pattern[tag] = {"em": 0.0, "f1": 0.0, "n": 0}
-
-        per_pattern[tag]["em"] += em
-        per_pattern[tag]["f1"] += f1
+        per_pattern[tag]["em"] += p["em"]
+        per_pattern[tag]["f1"] += p["f1"]
         per_pattern[tag]["n"] += 1
 
-    # normalize per pattern
-    for tag in per_pattern:
-        per_pattern[tag]["em"] /= per_pattern[tag]["n"]
-        per_pattern[tag]["f1"] /= per_pattern[tag]["n"]
+    for scores in per_pattern.values():
+        scores["em"] /= scores["n"]
+        scores["f1"] /= scores["n"]
 
     return {
-        "em": total_em / n,
-        "f1": total_f1 / n,
-        "n": n,
+        "em": result["em"],
+        "f1": result["f1"],
+        "n": result["n"],
         "per_pattern": per_pattern,
         "predictions": predictions
     }
 
+
+
+    
 
 def main() -> None:
     """Load adversarial set, run evaluation, write predictions + metrics."""
@@ -103,11 +89,8 @@ def main() -> None:
 
     result = evaluate_adversarial(qa, df)
 
-    # save predictions
-    pd.DataFrame(result["predictions"]).to_csv(
-        "stretch/tuesday/adversarial_predictions.csv",
-        index=False
-    )
+    pred_df = pd.DataFrame(result["predictions"])
+    pred_df.to_csv("stretch/tuesday/adversarial_predictions.csv", index=False)
 
     # save metrics
     metrics = {
@@ -115,7 +98,7 @@ def main() -> None:
         "f1": result["f1"],
         "n": result["n"],
         "per_pattern": result["per_pattern"],
-        "model": lab.get_qa_model_name()
+        "model": lab.get_qa_model_name(),
     }
 
     with open("stretch/tuesday/adversarial_metrics.json", "w") as f:
@@ -124,7 +107,7 @@ def main() -> None:
     print(f"Aggregate EM = {result['em']:.4f}")
     print(f"Aggregate F1 = {result['f1']:.4f}")
     print(f"n = {result['n']}")
-    print(f"Patterns = {list(result['per_pattern'].keys())}")
+    print(f"Per-pattern: {list(result['per_pattern'].keys())}")
 
 
 if __name__ == "__main__":
