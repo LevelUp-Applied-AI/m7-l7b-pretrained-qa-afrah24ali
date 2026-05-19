@@ -1,4 +1,24 @@
 qid,question,context,gold_answer,pattern_tag
-EX_01,REPLACE_WITH_YOUR_QUESTION,REPLACE_WITH_YOUR_CONTEXT_THAT_CONTAINS_THE_GOLD_ANSWER_AS_A_LITERAL_SUBSTRING,REPLACE_WITH_GOLD,your-pattern-tag
-EX_02,REPLACE_WITH_YOUR_QUESTION,REPLACE_WITH_YOUR_CONTEXT,REPLACE_WITH_GOLD,your-pattern-tag
-EX_03,REPLACE_WITH_A_CONTROL_QUESTION_THAT_THE_MODEL_SHOULD_GET_RIGHT,REPLACE_WITH_AN_EASY_VERSION_OF_THE_PATTERN,REPLACE_WITH_GOLD,control
+EX_01,Who did Morissette collaborate with?,"Morissette collaborated with Weezer on a track. She also worked with Guy Sigsworth on production.",Weezer,same-type-distractor
+EX_02,Who led the project?,"The project was led by NASA with support from ESA. Later ESA released a statement about funding.",NASA,same-type-distractor
+EX_03,What did Facebook acquire?,"Facebook acquired Instagram. Snapchat remained independent.",Instagram,same-type-distractor
+EX_04,Who did Amazon partner with?,"Amazon partnered with UPS. FedEx handled delivery for Walmart.",UPS,same-type-distractor
+EX_05,Who released GPT models?,"OpenAI released GPT models. Google released Gemini models.",OpenAI,same-type-distractor
+
+EX_06,Who launched Apollo missions?,"NASA launched Apollo missions.",NASA,multi-entity-clean
+EX_07,Who owns GitHub?,"Microsoft owns GitHub.",Microsoft,multi-entity-clean
+EX_08,Who produces electric cars?,"Tesla produces electric cars.",Tesla,multi-entity-clean
+EX_09,Who operates AWS?,"Amazon operates AWS.",Amazon,multi-entity-clean
+EX_10,Who owns YouTube?,"Google owns YouTube.",Google,multi-entity-clean
+
+EX_11,Who founded SpaceX?,"Elon Musk founded SpaceX in 2002 and later expanded Tesla operations.",Elon Musk,multi-sentence-relation
+EX_12,Who created Amazon?,"Jeff Bezos created Amazon and later launched Blue Origin.",Jeff Bezos,multi-sentence-relation
+EX_13,Who became CEO of Apple?,"Tim Cook became CEO of Apple after Steve Jobs.",Tim Cook,multi-sentence-relation
+EX_14,Who founded Facebook?,"Mark Zuckerberg founded Facebook while at Harvard.",Mark Zuckerberg,multi-sentence-relation
+EX_15,Who co-founded Google?,"Sergey Brin co-founded Google with Larry Page.",Sergey Brin,multi-sentence-relation
+
+EX_16,Who streams movies globally?,"Netflix streams movies globally.",Netflix,control
+EX_17,Who operates ride sharing services?,"Uber operates ride sharing services.",Uber,control
+EX_18,Who provides music streaming?,"Spotify provides music streaming.",Spotify,control
+EX_19,Who owns Facebook?,"Meta owns Facebook.",Meta,control
+EX_20,Who operates AWS?,"Amazon operates AWS.",Amazon,control
