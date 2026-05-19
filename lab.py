@@ -56,12 +56,29 @@ def load_examples(data_path: str) -> pd.DataFrame:
 # -- Task 1: Normalization + EM + F1 (same as drill) -------------------------
 
 def normalize_answer(s: str) -> str:
-    """SQuAD-style normalization (see drill / reading)."""
-   
-    s = s.lower()
-    s = re.sub(r'\b(a|an|the)\b', ' ', s)
-    s = s.translate(str.maketrans('', '', string.punctuation))
-    s = re.sub(r'\s+', ' ', s).strip()
+    """SQuAD-style normalization."""
+
+    def lower(text):
+        return text.lower()
+
+    def remove_punc(text):
+        return "".join(ch for ch in text if ch not in string.punctuation)
+
+    def remove_articles(text):
+        return re.sub(r"\b(a|an|the)\b", " ", text)
+
+    def white_space_fix(text):
+        return " ".join(text.split())
+
+    if s is None:
+        return ""
+
+    s = str(s)
+    s = lower(s)
+    s = remove_punc(s)
+    s = remove_articles(s)
+    s = white_space_fix(s)
+
     return s
 
 
