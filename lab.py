@@ -4,15 +4,13 @@ Module 7 Week B — Applied Lab: Pre-Trained QA Evaluation on Tech/Entertainment
 Implement the functions below. See the lab guide for full task descriptions.
 """
 
-from collections import Counter
 import json
 import os
 import re
 import string
 from collections import Counter
-
-import pandas as pd
 from transformers import pipeline
+import pandas as pd
 
 
 # -- Helpers (provided — do NOT modify) --------------------------------------
@@ -56,35 +54,18 @@ def load_examples(data_path: str) -> pd.DataFrame:
 # -- Task 1: Normalization + EM + F1 (same as drill) -------------------------
 
 def normalize_answer(s: str) -> str:
-    """SQuAD-style normalization."""
-
-    def lower(text):
-        return text.lower()
-
-    def remove_punc(text):
-        return "".join(ch for ch in text if ch not in string.punctuation)
-
-    def remove_articles(text):
-        return re.sub(r"\b(a|an|the)\b", " ", text)
-
-    def white_space_fix(text):
-        return " ".join(text.split())
-
-    if s is None:
-        return ""
-
-    s = str(s)
-    s = lower(s)
-    s = remove_punc(s)
-    s = remove_articles(s)
-    s = white_space_fix(s)
+    """SQuAD-style normalization (see drill / reading)."""
+    s = s.lower()
+    s = re.sub(r"\b(a|an|the)\b", " ", s)
+    s = "".join(char for char in s if char not in string.punctuation)
+    s = " ".join(s.split())
 
     return s
-
 
 def exact_match(pred: str, gold: str) -> int:
     """Return 1 if normalized prediction equals normalized gold."""
     return int(normalize_answer(pred) == normalize_answer(gold))
+
 
 
 def token_f1(pred: str, gold: str) -> float:
@@ -96,36 +77,42 @@ def token_f1(pred: str, gold: str) -> float:
       - one empty -> 0.0
     Returns float in [0.0, 1.0]; never NaN.
     """
-    pred = normalize_answer(pred)
-    gold = normalize_answer(gold)
+    pred_tokens = normalize_answer(pred).split()
+    gold_tokens = normalize_answer(gold).split()
 
-    if not pred and not gold:
+    # Empty handling
+    if not pred_tokens and not gold_tokens:
         return 1.0
-    if not pred or not gold:
+
+    if not pred_tokens or not gold_tokens:
         return 0.0
 
-    pred_tokens = pred.split()
-    gold_tokens = gold.split()
+    pred_counter = Counter(pred_tokens)
+    gold_counter = Counter(gold_tokens)
 
-    common = Counter(pred_tokens) & Counter(gold_tokens)
-    num_same = sum(common.values())
+    overlap = pred_counter & gold_counter
+    common = sum(overlap.values())
 
-    if num_same == 0: 
+    if common == 0:
         return 0.0
 
-    precision = num_same / len(pred_tokens)
-    recall = num_same / len(gold_tokens)
+    precision = common / len(pred_tokens)
+    recall = common / len(gold_tokens)
 
-    f1 = (2 * precision * recall) / (precision + recall)
-
-    return f1
+    return 2 * precision * recall / (precision + recall)
+    
 
 
 # -- Task 2: Build the QA pipeline -------------------------------------------
 
 def build_qa_pipeline(model_name: str):
     """Construct a Hugging Face question-answering pipeline."""
-    return pipeline("question-answering", model=model_name)
+    qa = pipeline(
+        "question-answering",
+        model=model_name
+    )
+
+    return qa
 
 
 # -- Task 3: Predict one answer ---------------------------------------------
@@ -136,8 +123,11 @@ def predict_one(qa, question: str, context: str) -> str:
 
     Returns the answer STRING only (not the full pipeline output dict).
     """
-    
-    result = qa("question":question, "context":context)
+    result = qa(
+        question=question,
+        context=context
+    )
+
     return result["answer"]
 
 
@@ -145,53 +135,41 @@ def predict_one(qa, question: str, context: str) -> str:
 
 def evaluate_qa(qa, examples: pd.DataFrame) -> dict:
     """
-    Evaluate the QA pipeline over a DataFrame of examples.
-
-    Returns:
-        {
-          "em": float,   # mean EM
-          "f1": float,   # mean token-F1
-          "n": int,
-          "predictions": [
-            {qid, question, context_excerpt, gold_answer, predicted_answer, em, f1},
-            ...
-          ],
-        }
-    context_excerpt is the first 80 chars of the context (CSV-friendly).
-    """
-    em_total = 0.0
-    f1_total = 0.0
-    n = len(examples)
+    Evaluate the QA pipeline over a DataFrame of examples."""
 
     predictions = []
 
-    for _, row in examples.iterrows():
-        qid = row["qid"]
-        question = row["question"]
-        context = row["context"]
-        gold_answer = row["gold_answer"]
+    em_scores = []
+    f1_scores = []
 
-        predicted_answer = predict_one(qa, question, context)
-        em = exact_match(predicted_answer, gold_answer)
-        f1 = token_f1(predicted_answer, gold_answer)
+    for _, row in examples.iterrows():
+
+        predicted_answer = predict_one(
+            qa,
+            row["question"],
+            row["context"]
+        )
+
+        em = exact_match(predicted_answer, row["gold_answer"])
+        f1 = token_f1(predicted_answer, row["gold_answer"])
+
+        em_scores.append(em)
+        f1_scores.append(f1)
 
         predictions.append({
-        "qid": qid,
-        "question": question,
-        "context_excerpt": context[:80],
-        "gold_answer": gold_answer,
-        "predicted_answer": predicted_answer,
-         "em": em,
-         "f1": f1,
-     })
-
-    em_mean = sum(p["em"] for p in predictions) / len(predictions)
-    f1_mean = sum(p["f1"] for p in predictions) / len(predictions)
+            "qid": row["qid"],
+            "question": row["question"],
+            "context_excerpt": row["context"][:80],
+            "gold_answer": row["gold_answer"],
+            "predicted_answer": predicted_answer,
+            "em": em,
+            "f1": f1,
+        })
 
     return {
-        "em": em_mean,
-        "f1": f1_mean,
-        "n": len(predictions),
+        "em": sum(em_scores) / len(em_scores),
+        "f1": sum(f1_scores) / len(f1_scores),
+        "n": len(examples),
         "predictions": predictions,
     }
 
