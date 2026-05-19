@@ -4,6 +4,7 @@ Module 7 Week B — Applied Lab: Pre-Trained QA Evaluation on Tech/Entertainment
 Implement the functions below. See the lab guide for full task descriptions.
 """
 
+from collections import Counter
 import json
 import os
 import re
@@ -11,6 +12,7 @@ import string
 from collections import Counter
 
 import pandas as pd
+from transformers import pipeline
 
 
 # -- Helpers (provided — do NOT modify) --------------------------------------
@@ -55,25 +57,13 @@ def load_examples(data_path: str) -> pd.DataFrame:
 
 def normalize_answer(s: str) -> str:
     """SQuAD-style normalization (see drill / reading)."""
-    
-    def remove_punc(text):
-        return "".join(ch for ch in text if ch not in string.punctuation)
+   
+    s = s.lower()
+    s = re.sub(r'\b(a|an|the)\b', ' ', s)
+    s = s.translate(str.maketrans('', '', string.punctuation))
+    s = re.sub(r'\s+', ' ', s).strip()
+    return s
 
-    def lower(text):
-        return text.lower()
-
-    def collapse_ws(text):
-        return " ".join(text.split())
-
-    if s is None:
-        return ""
-
-    s = str(s)
-    s = lower(s)
-    s = remove_punc(s)
-    s = collapse_ws(s)
-
-    return s.strip()
 
 def exact_match(pred: str, gold: str) -> int:
     """Return 1 if normalized prediction equals normalized gold."""
@@ -92,34 +82,33 @@ def token_f1(pred: str, gold: str) -> float:
     pred = normalize_answer(pred)
     gold = normalize_answer(gold)
 
-    if pred == "" and gold == "":
+    if not pred and not gold:
         return 1.0
-    if pred == "" or gold == "":
+    if not pred or not gold:
         return 0.0
 
     pred_tokens = pred.split()
     gold_tokens = gold.split()
 
     common = Counter(pred_tokens) & Counter(gold_tokens)
+    num_same = sum(common.values())
 
-    if len(common) == 0:
+    if num_same == 0: 
         return 0.0
 
-    precision = len(common) / len(pred_tokens)
-    recall = len(common) / len(gold_tokens)
+    precision = num_same / len(pred_tokens)
+    recall = num_same / len(gold_tokens)
 
-    if precision + recall == 0:
-        return 0.0
+    f1 = (2 * precision * recall) / (precision + recall)
 
-    return 2 * precision * recall / (precision + recall)
+    return f1
 
 
 # -- Task 2: Build the QA pipeline -------------------------------------------
 
 def build_qa_pipeline(model_name: str):
     """Construct a Hugging Face question-answering pipeline."""
-    from transformers import pipeline
-    return pipeline("question-answering", model=model_name, tokenizer=model_name)
+    return pipeline("question-answering", model=model_name)
 
 
 # -- Task 3: Predict one answer ---------------------------------------------
@@ -130,7 +119,8 @@ def predict_one(qa, question: str, context: str) -> str:
 
     Returns the answer STRING only (not the full pipeline output dict).
     """
-    result = qa(question=question, context=context)
+    
+    result = qa("question":question, "context":context)
     return result["answer"]
 
 
@@ -162,31 +152,30 @@ def evaluate_qa(qa, examples: pd.DataFrame) -> dict:
         qid = row["qid"]
         question = row["question"]
         context = row["context"]
-        gold = row["gold_answer"]
+        gold_answer = row["gold_answer"]
 
-        pred = predict_one(qa, question, context)
-
-        em = exact_match(pred, gold)
-        f1 = token_f1(pred, gold)
-
-        em_total += em
-        f1_total += f1
+        predicted_answer = predict_one(qa, question, context)
+        em = exact_match(predicted_answer, gold_answer)
+        f1 = token_f1(predicted_answer, gold_answer)
 
         predictions.append({
-            "qid": qid,
-            "question": question,
-            "context_excerpt": context[:80],
-            "gold_answer": gold,
-            "predicted_answer": pred,
-            "em": em,
-            "f1": f1
-        })
+        "qid": qid,
+        "question": question,
+        "context_excerpt": context[:80],
+        "gold_answer": gold_answer,
+        "predicted_answer": predicted_answer,
+         "em": em,
+         "f1": f1,
+     })
+
+    em_mean = sum(p["em"] for p in predictions) / len(predictions)
+    f1_mean = sum(p["f1"] for p in predictions) / len(predictions)
 
     return {
-        "em": em_total / n,
-        "f1": f1_total / n,
-        "n": n,
-        "predictions": predictions
+        "em": em_mean,
+        "f1": f1_mean,
+        "n": len(predictions),
+        "predictions": predictions,
     }
 
 
